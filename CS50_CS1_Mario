@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <cs50.h>
+
+//Program Mario More
+
+int main(void)
+{
+    int height, row, column;
+
+    do
+    {
+    height = get_int("Height: ");
+    }
+    while ( height > 8 || height < 1);
+
+    for(row = 0; row < height; row++)
+    {
+        for(column = height - 2; column >= row ; column--)
+        {
+            printf(" ");
+        }
+        for(column = 0; column <= row; column++)
+        {
+            printf("#");
+        }
+        printf("  "); //Two spaces
+        for(column = 0; column <= row; column++)
+        {
+            printf("#");
+        }
+        /*for(column = height; column >= row; column--)
+        {
+            printf(" ");
+        }*/ // This section was not necessary
+        printf("\n");
+    }
+}
