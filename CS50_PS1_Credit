@@ -1,0 +1,119 @@
+#include <stdio.h>
+#include <cs50.h>
+#include <math.h>
+
+int get_length(long);
+bool verify_length(int);
+bool verify_checksum(long);
+void produce_result(long card);
+int main(void)
+{
+    long card;
+    card = get_long("Credit Card Number: \n");
+    produce_result(card);
+    //printf("%i\n", produce_result(card));
+    //printf("%i\n", verify_checksum(card));
+}
+
+//Get Length Function 
+int get_length(long card)
+{
+    int counter = 0;
+    do
+    {
+        card /= 10;
+        counter++;
+    } while (card > 0);
+    //printf("%i", counter); --> Test Function to make sure get Length Works
+    return counter;
+}
+
+//Verification 1: Credit Card is either 13, 15, or 16 digits long
+bool verify_length(int length)
+{
+    if (length == 13 || length == 15 || length == 16)
+        {
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
+
+//Verification 2: Checksum is true 
+bool verify_checksum(long card)
+{
+    int digits = 0, index = 1, odds = 0, evens = 0, total = 0, digits_new = 0;
+    do 
+    {
+        digits = card % 10;
+        card /= 10;
+        if(index % 2 == 0)
+            {
+                digits_new = digits * 2;
+                evens += digits_new % 10;
+                digits_new /= 10;
+                evens += digits_new % 10;
+            }
+        else 
+            {
+                odds += digits;
+            }
+        index++;
+    } while (card > 0);
+    total = odds + evens;  
+    if (total % 10 == 0)
+        {
+            return true;
+        }
+    else
+        {
+            return false;
+        }
+}
+
+//Check that Verifications are both correct. If so produce the Card Type. If not Invalid.
+bool check_validity(long card)
+{
+    int length;
+    length = get_length(card);
+    if (verify_length(length) && verify_checksum(card) == true)
+        return true;
+    else
+        return false;
+}
+
+
+//Card Type Formula
+void produce_result(long card)
+{
+    if (check_validity(card) == true)
+        {
+        if ((card >= 34e13 && card < 35e13) || (card >= 37e13 && card < 38e13))
+            {
+                printf("AMEX\n");
+            }
+        else if (card >= 51e14 && card < 56e14)
+            {
+                printf("MASTERCARD\n");
+            }
+        else if (card >= 4e15 && card < 5e15)
+            {
+                printf("VISA\n");
+            }
+        else if (card >= 4e12 && card < 5e12)
+            {
+                printf("VISA\n");
+            }
+        else 
+            {
+                printf("INVALID\n");
+            }
+        }
+    else 
+        {
+            printf("INVALID\n");
+        }
+}
+
