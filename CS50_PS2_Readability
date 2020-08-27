@@ -1,0 +1,50 @@
+#include <cs50.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
+
+
+//Prompt user for a string of text using get_string()
+int main(void)
+{
+    string input = get_string("Text: ");
+    float Letters = 0, Words = 1, Sentences = 0; //Dont forget to set to the 0's here
+    //printf("Output: \n");
+    for (int i = 0, length = strlen(input) ; i < length ; i++)
+    {
+        if(isalpha(input[i]))
+        {
+            Letters++ ;
+        }
+        if(isspace(input[i]))
+        {
+            Words++;
+        }
+        if(input[i] == '.' || input[i] == '!' || input[i] == '?')
+        {
+            Sentences++;
+        }
+    }
+    //printf("%f\n%f\n%f\n", Letters, Words, Sentences);
+
+    float Grade = 0, L = 0, S = 0;
+    L = Letters / Words * 100;
+    S = Sentences / Words * 100;
+    
+    Grade = 0.0588 * L - 0.296 * S - 15.8; 
+    Grade = roundf(Grade);
+    if(Grade >= 16)
+    {
+        printf("Grade 16+\n");
+    }
+    else if(Grade <= 0)
+    {
+        printf("Before Grade 1\n");
+    }
+    else
+    {
+        printf("Grade %.0f\n", Grade);
+    }
+}
+
