@@ -1,0 +1,216 @@
+#include "helpers.h"
+#include <math.h>
+
+// Convert image to grayscale
+void grayscale(int height, int width, RGBTRIPLE image[height][width])
+{
+    //Take current value of RGB from each pixel
+    //Transfer amount from hexadecimal to Interger
+    //Find average of three amounts --> Output is approximately the average for all values
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            //Here we Switch-a-roo
+            int tempRed = image[i][j].rgbtRed;
+            int tempGreen = image[i][j].rgbtGreen;
+            int tempBlue = image[i][j].rgbtBlue;
+
+            float tempAverage = (round(tempRed) + round(tempGreen) + round(tempBlue)) / 3;
+            tempAverage = round(tempAverage);
+
+            image[i][j].rgbtRed = tempAverage;
+            image[i][j].rgbtGreen = tempAverage;
+            image[i][j].rgbtBlue = tempAverage;
+        }
+    }
+    return;
+}
+
+// Convert image to sepia
+void sepia(int height, int width, RGBTRIPLE image[height][width])
+{
+    //Take current value of RGB from each pixel
+    //Transfer the amounts based on formulas
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            //Here we Switch-a-roo
+            int tempRed = image[i][j].rgbtRed;
+            int tempGreen = image[i][j].rgbtGreen;
+            int tempBlue = image[i][j].rgbtBlue;
+
+            float transferRed = (round(tempRed) * 0.393 + round(tempGreen) * 0.769 + round(tempBlue) * 0.189);
+            float transferGreen = (round(tempRed) * 0.349 + round(tempGreen) * 0.686 + round(tempBlue) * 0.168);
+            float transferBlue = (round(tempRed) * 0.272 + round(tempGreen) * 0.534 + round(tempBlue) * 0.131);
+
+            transferRed = round(transferRed);
+            transferGreen = round(transferGreen);
+            transferBlue = round(transferBlue);
+
+            if(transferRed >= 256)
+            {
+                image[i][j].rgbtRed = 255;
+            }
+            else
+            {
+                image[i][j].rgbtRed = transferRed;
+            }
+
+            if(transferGreen >= 256)
+            {
+                image[i][j].rgbtGreen = 255;
+            }
+            else
+            {
+                image[i][j].rgbtGreen = transferGreen;
+            }
+
+            if(transferBlue >= 256)
+            {
+                image[i][j].rgbtBlue = 255;
+            }
+            else
+            {
+                image[i][j].rgbtBlue = transferBlue;
+            }
+
+        }
+    }
+    return;
+}
+
+// Reflect image horizontally
+void reflect(int height, int width, RGBTRIPLE image[height][width])
+{
+    //Take current position of pixel and switch based on width
+    //Move only the width
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width / 2; j++)
+        {
+            //Dont set int z as width - 1 - j; Ends up rounding down I believe
+            RGBTRIPLE temp = image[i][j];
+            image[i][j] = image[i][width - j - 1];
+            image[i][width - j - 1] = temp;
+        }
+    }
+    return;
+}
+
+// Blur image
+void blur(int height, int width, RGBTRIPLE image[height][width])
+{
+    RGBTRIPLE originalImage[height][width];
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            originalImage[i][j] = image[i][j];
+        }
+    }
+
+    for(int i = 0, sumRed, sumGreen, sumBlue, counter; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            sumRed = 0;
+            sumGreen = 0;
+            sumBlue = 0;
+            counter = 0;
+
+            //Middle Dot
+            if(i >= 0 && j >= 0)
+            {
+                sumRed += (float) originalImage[i][j].rgbtRed;
+                sumGreen += (float) originalImage[i][j].rgbtGreen;
+                sumBlue += (float) originalImage[i][j].rgbtBlue;
+                counter++;
+            }
+
+            //Left Dot
+            if(i >= 0 && j - 1 >= 0)
+            {
+                sumRed += (float) originalImage[i][j-1].rgbtRed;
+                sumGreen += (float) originalImage[i][j-1].rgbtGreen;
+                sumBlue += (float) originalImage[i][j-1].rgbtBlue;
+                counter++;
+            }
+
+            //Right Dot
+            if(i >= 0 && j + 1 < width)
+            {
+                sumRed += (float) originalImage[i][j+1].rgbtRed;
+                sumGreen += (float) originalImage[i][j+1].rgbtGreen;
+                sumBlue += (float) originalImage[i][j+1].rgbtBlue;
+                counter++;
+            }
+
+            //Lower Middle
+            if(i - 1 >= 0 && j >= 0)
+            {
+                sumRed += (float) originalImage[i-1][j].rgbtRed;
+                sumGreen += (float) originalImage[i-1][j].rgbtGreen;
+                sumBlue += (float) originalImage[i-1][j].rgbtBlue;
+                counter++;
+            }
+
+            //Lower Left
+            if(i - 1 >= 0 && j - 1 >= 0)
+            {
+                sumRed += (float) originalImage[i-1][j-1].rgbtRed;
+                sumGreen += (float) originalImage[i-1][j-1].rgbtGreen;
+                sumBlue += (float) originalImage[i-1][j-1].rgbtBlue;
+                counter++;
+            }
+
+            //Lower Right
+            if(i - 1 >= 0 && j + 1 < width)
+            {
+                sumRed += (float) originalImage[i-1][j+1].rgbtRed;
+                sumGreen += (float) originalImage[i-1][j+1].rgbtGreen;
+                sumBlue += (float) originalImage[i-1][j+1].rgbtBlue;
+                counter++;
+            }
+
+            //Upper Middle
+            if(i + 1 < height && j >= 0)
+            {
+                sumRed += (float) originalImage[i+1][j].rgbtRed;
+                sumGreen += (float) originalImage[i+1][j].rgbtGreen;
+                sumBlue += (float) originalImage[i+1][j].rgbtBlue;
+                counter++;
+            }
+
+            //Upper Left
+            if(i + 1 < height && j - 1 >= 0)
+            {
+                sumRed += (float) originalImage[i+1][j-1].rgbtRed;
+                sumGreen += (float) originalImage[i+1][j-1].rgbtGreen;
+                sumBlue += (float) originalImage[i+1][j-1].rgbtBlue;
+                counter++;
+            }
+
+            //Upper Right
+            if(i + 1 < height && j + 1 < width)
+            {
+                sumRed += (float) originalImage[i+1][j+1].rgbtRed;
+                sumGreen += (float) originalImage[i+1][j+1].rgbtGreen;
+                sumBlue += (float) originalImage[i+1][j+1].rgbtBlue;
+                counter++;
+            }
+            //Decimal Slightly Off. Cannot figure out
+            int tempRed = round(sumRed * 1.0) / counter;
+            int tempGreen = round(sumGreen * 1.0) / counter;
+            int tempBlue = round(sumBlue * 1.0) / counter;
+
+            image[i][j].rgbtRed = tempRed;
+            image[i][j].rgbtGreen = tempGreen;
+            image[i][j].rgbtBlue = tempBlue;
+
+        }
+    }
+
+    return;
+}
