@@ -2,6 +2,7 @@
 #include <math.h>
 
 // Convert image to grayscale
+int max_RGB(double maxValue);
 void grayscale(int height, int width, RGBTRIPLE image[height][width])
 {
     //Take current value of RGB from each pixel
@@ -201,9 +202,9 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
                 counter++;
             }
             //Decimal Slightly Off. Cannot figure out
-            int tempRed = round(sumRed * 1.0) / counter;
-            int tempGreen = round(sumGreen * 1.0) / counter;
-            int tempBlue = round(sumBlue * 1.0) / counter;
+            int tempRed = (int)round(sumRed * 1.0 / counter);
+            int tempGreen = (int)round(sumGreen * 1.0 / counter);
+            int tempBlue = (int)round(sumBlue * 1.0 / counter);
 
             image[i][j].rgbtRed = tempRed;
             image[i][j].rgbtGreen = tempGreen;
@@ -213,4 +214,134 @@ void blur(int height, int width, RGBTRIPLE image[height][width])
     }
 
     return;
+}
+
+
+void edges(int height, int width, RGBTRIPLE image[height][width])
+{
+    //Convert Image to Grayscale first —— Did Not Do Here
+    RGBTRIPLE copyImage[height][width];
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            copyImage[i][j] = image[i][j];
+        }
+    }
+
+    //Perform Sobel Operator
+    for(int i = 0; i < height; i++)
+    {
+        for(int j = 0; j < width; j++)
+        {
+            //Gx Section
+            float RGx, GGx, BGx, RGy, GGy, BGy;
+            RGx = GGx = BGx = RGy = GGy = BGy =  0.0;
+            float Gx, Gy;
+            Gx = Gy = 0.0;
+
+            //Pixel to the right
+            if(j < width - 1)
+            {
+                RGx += 2 * copyImage[i][j+1].rgbtRed;
+                GGx += 2 * copyImage[i][j+1].rgbtGreen;
+                BGx += 2 * copyImage[i][j+1].rgbtBlue;
+            }
+
+            //Pixel to the left
+            if(j > 0)
+            {
+                RGx += -2 * copyImage[i][j-1].rgbtRed;
+                GGx += -2 * copyImage[i][j-1].rgbtGreen;
+                BGx += -2 * copyImage[i][j-1].rgbtBlue;
+            }
+
+            //Pixel above
+            if(i > 0)
+            {
+                RGy += -2 * copyImage[i-1][j].rgbtRed;
+                GGy += -2 * copyImage[i-1][j].rgbtGreen;
+                BGy += -2 * copyImage[i-1][j].rgbtBlue;
+            }
+
+            //Pixel below
+            if(i < height - 1)
+            {
+                RGy += 2 * copyImage[i+1][j].rgbtRed;
+                GGy += 2 * copyImage[i+1][j].rgbtGreen;
+                BGy += 2 * copyImage[i+1][j].rgbtBlue;
+            }
+
+            //Pixel Top Left
+            if(i > 0 && j > 0)
+            {
+                RGx += -1 * copyImage[i-1][j-1].rgbtRed;
+                GGx += -1 * copyImage[i-1][j-1].rgbtGreen;
+                BGx += -1 * copyImage[i-1][j-1].rgbtBlue;
+
+                RGy += -1 * copyImage[i-1][j-1].rgbtRed;
+                GGy += -1 * copyImage[i-1][j-1].rgbtGreen;
+                BGy += -1 * copyImage[i-1][j-1].rgbtBlue;
+            }
+
+            //Pixel Top Right
+            if(i > 0 && j < width - 1)
+            {
+                RGx += 1 * copyImage[i-1][j+1].rgbtRed;
+                GGx += 1 * copyImage[i-1][j+1].rgbtGreen;
+                BGx += 1 * copyImage[i-1][j+1].rgbtBlue;
+
+                RGy += -1 * copyImage[i-1][j+1].rgbtRed;
+                GGy += -1 * copyImage[i-1][j+1].rgbtGreen;
+                BGy += -1 * copyImage[i-1][j+1].rgbtBlue;
+            }
+
+            //Pixel Bottom Left
+            if(i < height - 1 && j > 0)
+            {
+                RGx += -1 * copyImage[i+1][j-1].rgbtRed;
+                GGx += -1 * copyImage[i+1][j-1].rgbtGreen;
+                BGx += -1 * copyImage[i+1][j-1].rgbtBlue;
+
+                RGy += 1 * copyImage[i+1][j-1].rgbtRed;
+                GGy += 1 * copyImage[i+1][j-1].rgbtGreen;
+                BGy += 1 * copyImage[i+1][j-1].rgbtBlue;
+            }
+
+            //Pixel Bottom Right
+            if(i < height - 1 && j < width - 1)
+            {
+                RGx += 1 * copyImage[i+1][j+1].rgbtRed;
+                GGx += 1 * copyImage[i+1][j+1].rgbtGreen;
+                BGx += 1 * copyImage[i+1][j+1].rgbtBlue;
+
+                RGy += 1 * copyImage[i+1][j+1].rgbtRed;
+                GGy += 1 * copyImage[i+1][j+1].rgbtGreen;
+                BGy += 1 * copyImage[i+1][j+1].rgbtBlue;
+            }
+
+            image[i][j].rgbtRed = (int) max_RGB(sqrt((RGx * RGx) + (RGy * RGy)));
+            image[i][j].rgbtGreen = (int) max_RGB(sqrt((GGx * GGx) + (GGy * GGy)));
+            image[i][j].rgbtBlue = (int) max_RGB(sqrt((BGx * BGx) + (BGy * BGy)));
+        }
+    }
+    return;
+}
+
+int max_RGB(double maxValue)
+{
+    int result = 0;
+    if(maxValue > 255)
+    {
+        result = 255;
+    }
+    else if (maxValue < 0)
+    {
+        result = 0;
+    }
+    else
+    {
+        result = (int)round(maxValue);
+    }
+    return result;
 }
